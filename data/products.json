@@ -1,0 +1,26 @@
+[
+  {
+    "id": "classic-tee",
+    "title": "Classic Cotton Tee",
+    "price": 24.99,
+    "description": "Soft, breathable cotton t-shirt. Available in black, white, and navy.",
+    "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600",
+    "inStock": true
+  },
+  {
+    "id": "denim-jacket",
+    "title": "Vintage Denim Jacket",
+    "price": 89.99,
+    "description": "Classic blue denim with a relaxed fit. Perfect for layering.",
+    "image": "https://images.unsplash.com/photo-1551537482-f2075a1d41f2?w=600",
+    "inStock": true
+  },
+  {
+    "id": "sneakers",
+    "title": "Retro Running Sneakers",
+    "price": 119.99,
+    "description": "Lightweight retro-style sneakers with cushioned soles.",
+    "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600",
+    "inStock": true
+  }
+]
