@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Editor · My Shop</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .editor-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .editor-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 24px;
+    }
+    .editor-card h2 {
+      margin-bottom: 20px;
+      color: #25d366;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .form-row.full { grid-template-columns: 1fr; }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .checkbox-row input { width: auto; }
+    .btn {
+      background: #25d366;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-top: 10px;
+    }
+    .btn:hover { background: #128c7e; }
+    .btn-secondary { background: #555; }
+    .btn-danger { background: #ff4444; }
+    .btn-danger:hover { background: #cc0000; }
+    .product-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    .product-list-item button {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      margin: 0 0 0 8px;
+    }
+    #output {
+      width: 100%;
+      min-height: 200px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #f9f9f9;
+    }
+    .help-text {
+      background: #fffbe6;
+      border-left: 4px solid #ffc107;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+    .help-text strong { display: block; margin-bottom: 6px; }
+    .success-msg {
+      background: #d4edda;
+      color: #155724;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 12px;
+      display: none;
+    }
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">🛍️ My Shop</a>
+      <nav>
+        <a href="index.html">← Back to Shop</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="editor-container">
+
+    <div class="help-text">
+      <strong>📝 How to use:</strong>
+      Fill out the form below to add a product. When you're done, click "Copy JSON" and paste it into your <code>data/products.json</code> file on GitHub. Then commit — site updates in 30 seconds!
+    </div>
+
+    <!-- Current Products -->
+    <div class="editor-card">
+      <h2>Current Products (<span id="count">0</span>)</h2>
+      <div id="product-list">
+        <p style="color: #888;">Loading…</p>
+      </div>
+      <button class="btn btn-secondary" onclick="loadCurrent()">🔄 Refresh from File</button>
+    </div>
+
+    <!-- Add/Edit Form -->
+    <div class="editor-card">
+      <h2 id="form-title">➕ Add New Product</h2>
+      <form id="product-form" onsubmit="return false;">
+        <input type="hidden" id="edit-id" value="" />
+
+        <div class="form-row">
+          <div>
+            <label>ID (unique slug)</label>
+            <input type="text" id="title" placeholder="e.g. red-hoodie" required />
+          </div>
+          <div>
+            <label>Price ($)</label>
+            <input type="number" id="price" step="0.01" min="0" placeholder="29.99" required />
+          </div>
+        </div>
+
+        <div class="form-row full">
+          <div>
+            <label>Title (display name)</label>
+            <input type="text" id="displayTitle" placeholder="Red Hoodie" required />
+          </div>
+        </div>
+
+        <div class="form-row full">
+          <div>
+            <label>Description</label>
+            <textarea id="description" placeholder="Soft cotton hoodie in red..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-row full">
+          <div>
+            <label>Image URL</label>
+            <input type="url" id="image" placeholder="https://example.com/image.jpg" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <div class="checkbox-row">
+              <input type="checkbox" id="inStock" checked />
+              <label for="inStock" style="margin: 0;">In Stock</label>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn" onclick="addOrUpdateProduct()">
+          💾 Save Product
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+          ✖️ Cancel
+        </button>
+      </form>
+    </div>
+
+    <!-- Output -->
+    <div class="editor-card">
+      <h2>📋 Your JSON (copy this!)</h2>
+      <textarea id="output" readonly></textarea>
+      <button class="btn" onclick="copyOutput()">📋 Copy to Clipboard</button>
+      <button class="btn btn-secondary" onclick="downloadJSON()">⬇️ Download File</button>
+      <div class="success-msg" id="success">✅ Copied! Now paste into data/products.json on GitHub.</div>
+    </div>
+
+  </div>
+
+  <script>
+    let products = [];
+
+    // Load current products from the JSON file
+    async function loadCurrent() {
+      const list = document.getElementById("product-list");
+      try {
+        const res = await fetch("data/products.json");
+        products = await res.json();
+        renderList();
+        updateOutput();
+      } catch (err) {
+        list.innerHTML = `<p style="color: #ff4444;">Error loading products: ${err.message}</p>
+                          <p style="color: #888; font-size: 0.9rem;">
+                          Note: This page must be served by a web server (GitHub Pages works!), 
+                          not opened as a local file.</p>`;
+      }
+    }
+
+    function renderList() {
+      const list = document.getElementById("product-list");
+      document.getElementById("count").textContent = products.length;
+
+      if (products.length === 0) {
+        list.innerHTML = '<p style="color: #888;">No products yet. Add one below!</p>';
+        return;
+      }
+
+      list.innerHTML = products.map((p, i) => `
+        <div class="product-list-item">
+          <div>
+            <strong>${escapeHtml(p.title)}</strong> — $${Number(p.price).toFixed(2)}
+            ${p.inStock === false ? '<span style="color: #ff4444;">(Out of stock)</span>' : ''}
+          </div>
+          <div>
+            <button class="btn btn-secondary" onclick="editProduct(${i})">✏️ Edit</button>
+            <button class="btn btn-danger" onclick="deleteProduct(${i})">🗑️ Delete</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function autoId(title) {
+      return title.toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+    }
+
+    // Auto-fill ID when typing title
+    document.getElementById("displayTitle").addEventListener("input", e => {
+      const idField = document.getElementById("title");
+      if (!document.getElementById("edit-id").value) {
+        idField.value = autoId(e.target.value);
+      }
+    });
+
+    function addOrUpdateProduct() {
+      const id = document.getElementById("title").value.trim();
+      const title = document.getElementById("displayTitle").value.trim();
+      const price = parseFloat(document.getElementById("price").value);
+      const description = document.getElementById("description").value.trim();
+      const image = document.getElementById("image").value.trim();
+      const inStock = document.getElementById("inStock").checked;
+
+      if (!id || !title || isNaN(price)) {
+        alert("Please fill in ID, Title, and Price!");
+        return;
+      }
+
+      const product = { id, title, price, description, image, inStock };
+      const editId = document.getElementById("edit-id").value;
+
+      if (editId) {
+        // Update existing
+        const idx = products.findIndex(p => p.id === editId);
+        if (idx !== -1) products[idx] = product;
+      } else {
+        // Check for duplicate ID
+        if (products.some(p => p.id === id)) {
+          alert("A product with this ID already exists! Use a different ID.");
+          return;
+        }
+        products.push(product);
+      }
+
+      resetForm();
+      renderList();
+      updateOutput();
+    }
+
+    function editProduct(index) {
+      const p = products[index];
+      document.getElementById("title").value = p.id;
+      document.getElementById("displayTitle").value = p.title;
+      document.getElementById("price").value = p.price;
+      document.getElementById("description").value = p.description || "";
+      document.getElementById("image").value = p.image || "";
+      document.getElementById("inStock").checked = p.inStock !== false;
+      document.getElementById("edit-id").value = p.id;
+      document.getElementById("form-title").textContent = "✏️ Edit Product";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function deleteProduct(index) {
+      if (confirm(`Delete "${products[index].title}"?`)) {
+        products.splice(index, 1);
+        renderList();
+        updateOutput();
+      }
+    }
+
+    function resetForm() {
+      document.getElementById("product-form").reset();
+      document.getElementById("edit-id").value = "";
+      document.getElementById("form-title").textContent = "➕ Add New Product";
+      document.getElementById("inStock").checked = true;
+    }
+
+    function updateOutput() {
+      document.getElementById("output").value = JSON.stringify(products, null, 2);
+    }
+
+    function copyOutput() {
+      const output = document.getElementById("output");
+      output.select();
+      document.execCommand("copy");
+      const msg = document.getElementById("success");
+      msg.style.display = "block";
+      setTimeout(() => msg.style.display = "none", 3000);
+    }
+
+    function downloadJSON() {
+      const blob = new Blob([JSON.stringify(products, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "products.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // Auto-load on page open
+    loadCurrent();
+  </script>
+</body>
+</html>
